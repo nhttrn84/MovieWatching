@@ -8,19 +8,13 @@ public interface IScrapingServiceStrategy {
 
     public MoviesByCountryResponse getMoviesByCountry(String category, int page) throws Exception;
 
-    public MovieDetailsResponse getMovieDetail(String title) throws Exception;
+    public MovieDetailsResponse getMovieDetail(String title, String type) throws Exception;
 
-    public MovieEpisodeResponse getMovieEpisode(String title) throws Exception;
+    public MovieEpisodeResponse getMovieEpisode(String title, String type) throws Exception;
 
-    // public NovelChapterListResponse getNovelChapterList(String category, int
-    // page) throws Exception;
-    // public NovelChapterContentResponse getNovelChapterContent(String title,
-    // String chapterNumber) throws Exception;
     public CategoriesResponse getCategories() throws Exception;
 
     public CountriesResponse getCountries() throws Exception;
-    // public SearchResponse getSearchResult(String keyword, int page) throws
-    // Exception;
-    // public NovelDownloadContentDTO getDownloadContent(String title) throws
-    // Exception;
+
+    public SearchResponse getSearchResult(String keyword, int page) throws Exception;
 }

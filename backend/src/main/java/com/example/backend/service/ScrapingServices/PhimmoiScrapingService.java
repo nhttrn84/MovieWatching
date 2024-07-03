@@ -42,7 +42,7 @@ public class PhimmoiScrapingService implements IScrapingServiceStrategy {
     private static final Logger log = LoggerFactory.getLogger(PhimmoiScrapingService.class);
 
     private static List<MoviesByCatDTO> extractMoviesFromPage(Document document) {
-        Elements movieElements = document.getElementsByClass("items");
+        Elements movieElements = document.select("div.items article");
         List<MoviesByCatDTO> movieList = new ArrayList<>();
 
         for (Element movieElement : movieElements) {
@@ -52,6 +52,24 @@ public class PhimmoiScrapingService implements IScrapingServiceStrategy {
                     .poster(movieElement.select("div.poster img").attr("src"))
                     .status(movieElement.select("div.trangthai").text())
                     .link(movieElement.select("div.data h3 a").attr("href"))
+                    .build();
+
+            movieList.add(movie);
+        }
+        return movieList;
+    }
+
+    private static List<MoviesByCatDTO> extractMoviesFromSearchResult(Document document) {
+        Elements movieElements = document.getElementsByClass("result-item");
+        List<MoviesByCatDTO> movieList = new ArrayList<>();
+
+        for (Element movieElement : movieElements) {
+            MoviesByCatDTO movie = MoviesByCatDTO.builder()
+                    .title(movieElement.select("div.title a").text())
+                    .subTitle("")
+                    .poster(movieElement.select("img").attr("src"))
+                    .status(movieElement.select("span.movies").text())
+                    .link(movieElement.select("div.thumbnail a").attr("href"))
                     .build();
 
             movieList.add(movie);
@@ -179,7 +197,7 @@ public class PhimmoiScrapingService implements IScrapingServiceStrategy {
         try {
             Document document = Jsoup.connect(url + page).get();
             List<MoviesByCatDTO> moviesByCat = extractMoviesFromPage(document);
-            log.info("movies by category: {}", moviesByCat);
+
             return MoviesByCatResponse.builder()
                     .movies(moviesByCat)
                     .currentPage(page)
@@ -197,19 +215,21 @@ public class PhimmoiScrapingService implements IScrapingServiceStrategy {
         try {
             Document document = Jsoup.connect(url + page).get();
             List<MoviesByCatDTO> moviesByCat = extractMoviesFromPage(document);
-            log.info("movies by category: {}", moviesByCat);
+
             return MoviesByCountryResponse.builder()
                     .movies(moviesByCat)
                     .currentPage(page)
                     .build();
         } catch (IOException e) {
-            throw new Exception("Error fetching movies by category");
+            throw new Exception("Error fetching movies by country");
         }
     }
 
-    public MovieDetailsResponse getMovieDetail(String title) throws Exception {
+    @Override
+    public MovieDetailsResponse getMovieDetail(String title, String type) throws Exception {
         String normalizedTitle = stringManipulator.modify(title);
-        String url = "https://phimmoiiii.net" + normalizedTitle;
+        String normalizedType = stringManipulator.modify(type);
+        String url = "https://phimmoiiii.net/" + normalizedType + "/" + normalizedTitle;
 
         try {
             Document document = Jsoup.connect(url).get();
@@ -223,9 +243,11 @@ public class PhimmoiScrapingService implements IScrapingServiceStrategy {
         }
     }
 
-    public MovieEpisodeResponse getMovieEpisode(String title) throws Exception {
+    @Override
+    public MovieEpisodeResponse getMovieEpisode(String title, String type) throws Exception {
         String normalizedTitle = stringManipulator.modify(title);
-        String url = "https://phimmoiiii.net/" + normalizedTitle;
+        String normalizedType = stringManipulator.modify(type);
+        String url = "https://phimmoiiii.net/" + normalizedType + "/" + normalizedTitle;
 
         System.setProperty("webdriver.chrome.driver", "D:\\chromedriver-win64\\chromedriver.exe");
 
@@ -257,6 +279,24 @@ public class PhimmoiScrapingService implements IScrapingServiceStrategy {
         } finally {
             // Close the browser
             driver.quit();
+        }
+    }
+
+    @Override
+    public SearchResponse getSearchResult(String keyword, int page) throws Exception {
+        String normalizedKeyword = stringManipulator.modify(keyword);
+        String url = "https://phimmoiiii.net/page/" + page + "?s=" + normalizedKeyword;
+
+        try {
+            Document document = Jsoup.connect(url).get();
+            List<MoviesByCatDTO> moviesByCat = extractMoviesFromSearchResult(document);
+            log.info("movies by search: {}", moviesByCat);
+            return SearchResponse.builder()
+                    .movies(moviesByCat)
+                    .currentPage(page)
+                    .build();
+        } catch (IOException e) {
+            throw new Exception("Error fetching movies by search");
         }
     }
 }

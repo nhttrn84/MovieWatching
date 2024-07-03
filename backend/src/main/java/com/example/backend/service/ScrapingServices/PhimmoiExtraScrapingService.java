@@ -199,7 +199,8 @@ public class PhimmoiExtraScrapingService implements IScrapingServiceStrategy {
         }
     }
 
-    public MovieDetailsResponse getMovieDetail(String title) throws Exception {
+    @Override
+    public MovieDetailsResponse getMovieDetail(String title, String type) throws Exception {
         String normalizedTitle = stringManipulator.modify(title);
         String url = "https://phimmoichillu.net/info/" + normalizedTitle;
 
@@ -215,7 +216,8 @@ public class PhimmoiExtraScrapingService implements IScrapingServiceStrategy {
         }
     }
 
-    public MovieEpisodeResponse getMovieEpisode(String title) throws Exception {
+    @Override
+    public MovieEpisodeResponse getMovieEpisode(String title, String type) throws Exception {
         String normalizedTitle = stringManipulator.modify(title);
         String url = "https://phimmoichillu.net/xem/" + normalizedTitle;
 
@@ -228,6 +230,24 @@ public class PhimmoiExtraScrapingService implements IScrapingServiceStrategy {
                     .build();
         } catch (IOException e) {
             throw new Exception("Error fetching movies by category");
+        }
+    }
+
+    @Override
+    public SearchResponse getSearchResult(String keyword, int page) throws Exception {
+        String normalizedKeyword = stringManipulator.modify(keyword);
+        String url = "https://phimmoiiii.netpage/" + page + "?s=" + normalizedKeyword;
+
+        try {
+            Document document = Jsoup.connect(url).get();
+            List<MoviesByCatDTO> moviesByCat = extractMoviesFromPage(document);
+            log.info("movies by search: {}", moviesByCat);
+            return SearchResponse.builder()
+                    .movies(moviesByCat)
+                    .currentPage(page)
+                    .build();
+        } catch (IOException e) {
+            throw new Exception("Error fetching movies by search");
         }
     }
 }

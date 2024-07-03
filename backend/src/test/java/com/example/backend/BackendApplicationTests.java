@@ -13,6 +13,7 @@ import com.example.backend.response.CountriesResponse;
 import com.example.backend.response.MovieDetailsResponse;
 import com.example.backend.response.MovieEpisodeResponse;
 import com.example.backend.response.MoviesByCatResponse;
+import com.example.backend.response.SearchResponse;
 import com.example.backend.service.ScrapingServices.PhimmoiScrapingService;
 
 @SpringBootTest
@@ -48,5 +49,21 @@ class BackendApplicationTests {
 				.getMovieEpisode("phim-le/nang-cap");
 		assertNotNull(response);
 		System.out.println(response.getMovieEpisodes());
+	}
+
+	@Test
+	void testGetMovieEpisodePhimBo() throws Exception {
+		MovieEpisodeResponse response = phimmoiScrapingService
+				.getMovieEpisode("xem-phim/the-gioi-ma-quai-2-sweet-home-2-tap-1");
+		assertNotNull(response);
+		System.out.println(response.getMovieEpisodes());
+	}
+
+	@Test
+	void testSearchMovie() throws Exception {
+		SearchResponse response = phimmoiScrapingService
+				.getSearchResult("nâng", 1);
+		assertNotNull(response);
+		System.out.println(response.getMovies());
 	}
 }
