@@ -10,6 +10,8 @@ public interface IScrapingServiceStrategy {
 
     public MovieDetailsResponse getMovieDetail(String title) throws Exception;
 
+    public MovieEpisodeResponse getMovieEpisode(String title) throws Exception;
+
     // public NovelChapterListResponse getNovelChapterList(String category, int
     // page) throws Exception;
     // public NovelChapterContentResponse getNovelChapterContent(String title,

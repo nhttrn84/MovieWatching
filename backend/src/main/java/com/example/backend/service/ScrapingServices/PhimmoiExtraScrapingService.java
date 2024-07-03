@@ -12,17 +12,11 @@ import org.springframework.stereotype.Service;
 
 import com.example.backend.dto.EpisodeDTO;
 import com.example.backend.dto.MovieDetailsDTO;
-import com.example.backend.dto.MovieEpisodesDTO;
 import com.example.backend.dto.MoviesByCatDTO;
 import com.example.backend.dto.PersonDTO;
+import com.example.backend.factory.ScrapingServiceFactory;
 import com.example.backend.utils.StringManipulator;
 import com.example.backend.response.*;
-
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
-import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.chrome.ChromeOptions;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -31,7 +25,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Service
-public class PhimmoiScrapingService implements IScrapingServiceStrategy {
+public class PhimmoiExtraScrapingService implements IScrapingServiceStrategy {
     @Autowired
     private StringManipulator stringManipulator;
 
@@ -39,19 +33,19 @@ public class PhimmoiScrapingService implements IScrapingServiceStrategy {
         this.stringManipulator = stringManipulator;
     }
 
-    private static final Logger log = LoggerFactory.getLogger(PhimmoiScrapingService.class);
+    private static final Logger log = LoggerFactory.getLogger(PhimmoiExtraScrapingService.class);
 
     private static List<MoviesByCatDTO> extractMoviesFromPage(Document document) {
-        Elements movieElements = document.getElementsByClass("items");
+        Elements movieElements = document.select("ul.list-film li");
         List<MoviesByCatDTO> movieList = new ArrayList<>();
 
         for (Element movieElement : movieElements) {
             MoviesByCatDTO movie = MoviesByCatDTO.builder()
-                    .title(movieElement.select("div.data h3 a").text())
-                    .subTitle(movieElement.select("div.data span span").text())
-                    .poster(movieElement.select("div.poster img").attr("src"))
-                    .status(movieElement.select("div.trangthai").text())
-                    .link(movieElement.select("div.data h3 a").attr("href"))
+                    .title(movieElement.select("a h3").text())
+                    .subTitle("")
+                    .poster(movieElement.select("a img").attr("src"))
+                    .status(movieElement.select("span div").text())
+                    .link(movieElement.select("a").attr("href"))
                     .build();
 
             movieList.add(movie);
@@ -60,47 +54,40 @@ public class PhimmoiScrapingService implements IScrapingServiceStrategy {
     }
 
     private static MovieDetailsDTO extractMovieDetail(Document document) {
-        String title = document.select("div.data h1").text();
-        String subTitle = document.select("div.data div.extra span.valor").text();
-        String poster = document.select("div.poster img").attr("src");
-        String date = document.select("div.data div.extra span.date").text();
-        String status = document.select("div.data div.movie_label span.item-label").text();
-        String rating = document.select("div.starstruck-rating span.dt_rating_vgs").text();
-        String info = document.select("div#info p").text();
-        Elements categoryElements = document.select("div.sgeneros a");
+        String title = document.select("div.image div.text h1").text();
+        String subTitle = document.select("div.image div.text h2").text();
+        String poster = document.select("div.image img").attr("src");
+        String date = document.select("div.film-info div.text ul.block-film li:nth-of-type(2) a").text();
+        String status = document.select("div.film-info div.text ul.block-film li:nth-of-type(1) span").text();
+        String rating = document.select("div.social div.box-rating div#div_average span.average").text();
+        String info = document.select("div#film-content").text();
+        Elements categoryElements = document.select("div.film-info div.text ul li:nth-of-type(4) a");
         List<String> categories = new ArrayList<>();
         for (Element categoryElement : categoryElements) {
             categories.add(categoryElement.text());
         }
 
-        Elements episodeElements = document.select("ul.episodios li");
-        List<EpisodeDTO> episodes = new ArrayList<>();
-        for (Element episodeElement : episodeElements) {
-            episodes.add(EpisodeDTO.builder()
-                    .title(episodeElement.text())
-                    .link(episodeElement.select("div.episodiotitle a").attr("href"))
-                    .build());
-        }
-
-        Elements creatorElements = document.select("div#cast h2:contains(Creator) + div.persons .person");
+        Elements creatorElements = document
+                .select("div.film-info div.text ul li:nth-of-type(5) span[itemprop='director']");
         List<PersonDTO> creators = new ArrayList<>();
 
         for (Element creatorElement : creatorElements) {
             creators.add(PersonDTO.builder()
-                    .name(creatorElement.select("div.name a").text())
-                    .image(creatorElement.select("div.img a img").attr("src"))
-                    .character(creatorElement.select("div.caracter").text())
+                    .name(creatorElement.select("span[itemprop='name']").text())
+                    .image("")
+                    .character("Director")
                     .build());
         }
 
-        Elements actorElements = document.select("div#cast h2:contains(Diễn viên) + div.persons .person");
+        Elements actorElements = document.select("div.film-info div.text ul li:nth-of-type(8) a");
         List<PersonDTO> actors = new ArrayList<>();
 
+        log.info("actorEle {}", actorElements);
         for (Element actorElement : actorElements) {
             actors.add(PersonDTO.builder()
-                    .name(actorElement.select("div.name a").text())
-                    .image(actorElement.select("div.img a img").attr("src"))
-                    .character(actorElement.select("div.caracter").text())
+                    .name(actorElement.select("a").text())
+                    .image("")
+                    .character("Actor")
                     .build());
         }
 
@@ -112,7 +99,7 @@ public class PhimmoiScrapingService implements IScrapingServiceStrategy {
                 .status(status)
                 .rating(rating)
                 .categories(categories)
-                .episodes(episodes)
+                .episodes(null)
                 .info(info)
                 .creators(creators)
                 .actors(actors)
@@ -121,20 +108,23 @@ public class PhimmoiScrapingService implements IScrapingServiceStrategy {
 
     @Override
     public CategoriesResponse getCategories() throws Exception {
-        String url = "https://phimmoiiii.net/";
+        String url = "https://phimmoichillu.net//";
         try {
             // Send an HTTP GET request to the website
             Document document = Jsoup.connect(url).get();
             List<String> categoryList = new ArrayList<>();
-            Element categoryMenu = document.getElementById("menu-item-13");
+            Element categorySelect = document.select("a[title='Thể Loại Phim']").first();
 
-            if (categoryMenu != null) {
-                Elements categoryListElements = categoryMenu.select("ul.sub-menu li a");
-
-                for (Element categoryElement : categoryListElements) {
-                    categoryList.add(categoryElement.text());
+            if (categorySelect != null) {
+                Element categoryMenu = categorySelect.parent().select("ul.sub-menu.span-6").first();
+                if (categoryMenu != null) {
+                    Elements categoryElements = categoryMenu.select("a");
+                    for (Element categoryElement : categoryElements) {
+                        categoryList.add(categoryElement.text());
+                    }
                 }
             }
+
             log.info("Category list: {}", categoryList);
             return CategoriesResponse.builder()
                     .categories(categoryList)
@@ -147,26 +137,28 @@ public class PhimmoiScrapingService implements IScrapingServiceStrategy {
 
     @Override
     public CountriesResponse getCountries() throws Exception {
-        String url = "https://phimmoiiii.net/";
+        String url = "https://phimmoichillu.net//";
         try {
             // Send an HTTP GET request to the website
             Document document = Jsoup.connect(url).get();
-            List<String> categoryList = new ArrayList<>();
-            Element categoryMenu = document.getElementById("menu-item-11");
+            List<String> countryList = new ArrayList<>();
+            Element countrySelect = document.select("a[title='Quốc Gia']").first();
 
-            if (categoryMenu != null) {
-                Elements categoryListElements = categoryMenu.select("ul.sub-menu li a");
-
-                for (Element categoryElement : categoryListElements) {
-                    categoryList.add(categoryElement.text());
+            if (countrySelect != null) {
+                Element countryMenu = countrySelect.parent().select("ul.sub-menu").first();
+                if (countryMenu != null) {
+                    Elements countryElements = countryMenu.select("a");
+                    for (Element countryElement : countryElements) {
+                        countryList.add(countryElement.text());
+                    }
                 }
             }
 
             return CountriesResponse.builder()
-                    .countries(categoryList)
+                    .countries(countryList)
                     .build();
         } catch (Exception e) {
-            log.error("Error fetching categories", e);
+            log.error("Error fetching countries", e);
             throw new Exception(e.getMessage());
         }
     }
@@ -174,7 +166,7 @@ public class PhimmoiScrapingService implements IScrapingServiceStrategy {
     @Override
     public MoviesByCatResponse getMoviesByCategory(String category, int page) throws Exception {
         String normalizedCategory = stringManipulator.modify(category);
-        String url = "https://phimmoiiii.net/the-loai/" + normalizedCategory + "/page/";
+        String url = "https://phimmoichillu.net/genre/" + normalizedCategory + "/page-";
 
         try {
             Document document = Jsoup.connect(url + page).get();
@@ -192,7 +184,7 @@ public class PhimmoiScrapingService implements IScrapingServiceStrategy {
     @Override
     public MoviesByCountryResponse getMoviesByCountry(String category, int page) throws Exception {
         String normalizedCategory = stringManipulator.modify(category);
-        String url = "https://phimmoiiii.net/quoc-gia/" + normalizedCategory + "/page/";
+        String url = "https://phimmoichillu.net/country/" + normalizedCategory + "/page-";
 
         try {
             Document document = Jsoup.connect(url + page).get();
@@ -209,12 +201,12 @@ public class PhimmoiScrapingService implements IScrapingServiceStrategy {
 
     public MovieDetailsResponse getMovieDetail(String title) throws Exception {
         String normalizedTitle = stringManipulator.modify(title);
-        String url = "https://phimmoiiii.net" + normalizedTitle;
+        String url = "https://phimmoichillu.net/info/" + normalizedTitle;
 
         try {
             Document document = Jsoup.connect(url).get();
             MovieDetailsDTO movieDetails = extractMovieDetail(document);
-            log.info("movie details: {}", movieDetails);
+
             return MovieDetailsResponse.builder()
                     .movieDetails(movieDetails)
                     .build();
@@ -225,38 +217,17 @@ public class PhimmoiScrapingService implements IScrapingServiceStrategy {
 
     public MovieEpisodeResponse getMovieEpisode(String title) throws Exception {
         String normalizedTitle = stringManipulator.modify(title);
-        String url = "https://phimmoiiii.net/" + normalizedTitle;
-
-        System.setProperty("webdriver.chrome.driver", "D:\\chromedriver-win64\\chromedriver.exe");
-
-        ChromeOptions options = new ChromeOptions();
-        options.addArguments("--headless");
-        options.addArguments("--disable-gpu");
-        options.addArguments("--no-sandbox");
-
-        // Initialize WebDriver with ChromeOptions
-        WebDriver driver = new ChromeDriver(options);
+        String url = "https://phimmoichillu.net/xem/" + normalizedTitle;
 
         try {
-            // Open the page
-            driver.get(url);
-            WebElement iframe = driver.findElement(By.xpath("//div[@class='pframe']/iframe[1]"));
-            String src = iframe.getAttribute("src");
-            String extractedLink = src.substring(src.indexOf("=") + 1);
-
-            MovieEpisodesDTO movieLink = MovieEpisodesDTO.builder()
-                    .video(extractedLink)
-                    .build();
+            Document document = Jsoup.connect(url).get();
+            log.info("document: {}", document);
 
             return MovieEpisodeResponse.builder()
-                    .movieEpisodes(movieLink)
+                    .movieEpisodes(null)
                     .build();
-
-        } catch (Exception e) {
-            throw new Exception("Error fetching movies by episode");
-        } finally {
-            // Close the browser
-            driver.quit();
+        } catch (IOException e) {
+            throw new Exception("Error fetching movies by category");
         }
     }
 }
