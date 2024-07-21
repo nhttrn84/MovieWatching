@@ -38,7 +38,7 @@ class BackendApplicationTests {
 
 	@Test
 	void testGetMovieDetails() throws Exception {
-		MovieDetailsResponse response = phimmoiScrapingService.getMovieDetail("phim-bo/samurai-mat-xanh");
+		MovieDetailsResponse response = phimmoiScrapingService.getMovieDetail("samurai-mat-xanh", "phim-bo");
 		assertNotNull(response);
 		System.out.println(response.getMovieDetails());
 	}
@@ -46,7 +46,7 @@ class BackendApplicationTests {
 	@Test
 	void testGetMovieEpisode() throws Exception {
 		MovieEpisodeResponse response = phimmoiScrapingService
-				.getMovieEpisode("phim-le/nang-cap");
+				.getMovieEpisode("phim-le/nang-cap", "phim-le");
 		assertNotNull(response);
 		System.out.println(response.getMovieEpisodes());
 	}
@@ -54,7 +54,7 @@ class BackendApplicationTests {
 	@Test
 	void testGetMovieEpisodePhimBo() throws Exception {
 		MovieEpisodeResponse response = phimmoiScrapingService
-				.getMovieEpisode("xem-phim/the-gioi-ma-quai-2-sweet-home-2-tap-1");
+				.getMovieEpisode("xem-phim/the-gioi-ma-quai-2-sweet-home-2-tap-1", "phim-bo");
 		assertNotNull(response);
 		System.out.println(response.getMovieEpisodes());
 	}
