@@ -5,8 +5,17 @@ interface GetMovieByCategoryParams {
   pageNumber?: number;
 }
 
+interface CategoryResponse {
+  status: string;
+  message: string;
+  status_code: number;
+  data: {
+    categories?: string[];
+  };
+}
+
 class CategoryAPI {
-  async getAllCategories(): Promise<Array<string>> {
+  async getAllCategories(): Promise<CategoryResponse> {
     const response = await customAxios.get('/categories');
     return response.data;
   }

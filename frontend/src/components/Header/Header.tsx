@@ -2,6 +2,7 @@ import React from 'react';
 import { AppBar, Toolbar, Typography, Button, InputBase } from '@mui/material';
 import { styled, alpha } from '@mui/material/styles';
 import SearchIcon from '@mui/icons-material/Search';
+import Categories from '../Categories/Categories';
 
 const Search = styled('div')(({ theme }) => ({
     position: 'relative',
@@ -43,6 +44,7 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 }));
 
 const Header: React.FC = () => {
+
     return (
         <AppBar position="fixed" color="primary">
             <Toolbar>
@@ -56,7 +58,7 @@ const Header: React.FC = () => {
                         <Button color="inherit">Phim mới</Button>
                         <Button color="inherit">Phim lẻ</Button>
                         <Button color="inherit">Phim bộ</Button>
-                        <Button color="inherit">Thể loại</Button>
+                        <Categories/>
                         <Button color="inherit">Quốc gia</Button>
                     </nav>
                 </div>
