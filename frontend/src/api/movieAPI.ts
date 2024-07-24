@@ -5,8 +5,26 @@ interface GetMovieDetailParams {
   title: string;
 }
 
+interface MovieDetailResponse {
+  status: string;
+  message: string;
+  status_code: number;
+  data: {
+    movieDetails?: string[];
+  };
+}
+
+interface MovieEpisodeResponse {
+  status: string;
+  message: string;
+  status_code: number;
+  data: {
+    movieEpisode?: string[];
+  };
+}
+
 class MovieAPI {
-  async getMovieDetails({ type, title }: GetMovieDetailParams): Promise<Array<string>> {
+  async getMovieDetails({ type, title }: GetMovieDetailParams): Promise<MovieDetailResponse> {
     if (!type) {
       throw new Error('No type specified 💥');
     }
@@ -21,7 +39,7 @@ class MovieAPI {
     return response.data;
   }
 
-  async getMovieEpisode({ type, title }: GetMovieDetailParams): Promise<Array<string>> {
+  async getMovieEpisode({ type, title }: GetMovieDetailParams): Promise<MovieEpisodeResponse> {
     if (!type) {
       throw new Error('No type specified 💥');
     }

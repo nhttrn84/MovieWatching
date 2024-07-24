@@ -1,11 +1,10 @@
 import React from 'react';
-import { Layout, Container } from '../../components';
 
 const Homepage: React.FC = () => {
     return (
-        <Layout>
-            <Container />
-        </Layout>
+        <div>
+            Chào mừng đến với Phim mới version không có quảng cáo
+        </div>
     );
 };
 

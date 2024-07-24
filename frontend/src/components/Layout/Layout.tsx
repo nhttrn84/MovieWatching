@@ -1,18 +1,14 @@
 import React from 'react';
 import { Header } from '../../components';
-import { Container } from '@mui/material';
+import { Outlet } from 'react-router-dom';
 
-interface LayoutProps {
-    children: React.ReactNode;
-}
-
-const Layout: React.FC<LayoutProps> = ({ children }) => {
+const Layout: React.FC = () => {
     return (
         <div>
             <Header />
-            <Container>
-                {children}
-            </Container>
+            <div style={{ marginTop: '50px' }} className="flex-1">
+            <Outlet />
+          </div>
         </div>
     );
 };
