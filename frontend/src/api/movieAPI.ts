@@ -1,8 +1,28 @@
 import customAxios from './customAPI';
 
-interface GetMovieDetailParams {
-  type: string;
+interface Episode {
   title: string;
+  link: string;
+}
+
+interface Person {
+  name: string;
+  image: string;
+  character: string;
+}
+
+interface MovieDetail {
+  title: string;
+  subTitle: string;
+  poster: string;
+  date: string;
+  status: string;
+  rating: string;
+  categories: string[];
+  episodes: Episode[];
+  info: string;
+  creators: Person[];
+  actors: Person[];
 }
 
 interface MovieDetailResponse {
@@ -10,7 +30,7 @@ interface MovieDetailResponse {
   message: string;
   status_code: number;
   data: {
-    movieDetails?: string[];
+    movieDetails?: MovieDetail;
   };
 }
 
@@ -24,32 +44,24 @@ interface MovieEpisodeResponse {
 }
 
 class MovieAPI {
-  async getMovieDetails({ type, title }: GetMovieDetailParams): Promise<MovieDetailResponse> {
-    if (!type) {
-      throw new Error('No type specified 💥');
-    }
-
+  async getMovieDetails(title: string | undefined): Promise<MovieDetailResponse> {
     if (!title) {
         throw new Error('No title specified 💥');
     }
 
     const response = await customAxios.get(
-      `/detail/${type}/${title}`
+      `/detail/${title}`
     );
     return response.data;
   }
 
-  async getMovieEpisode({ type, title }: GetMovieDetailParams): Promise<MovieEpisodeResponse> {
-    if (!type) {
-      throw new Error('No type specified 💥');
-    }
-
+  async getMovieEpisode(title: string | undefined): Promise<MovieEpisodeResponse> {
     if (!title) {
       throw new Error('No title specified 💥');
     }
 
     const response = await customAxios.get(
-      `/episode/${type}/${title}`
+      `/episode/${title}`
     );
     return response.data;
   }

@@ -8,9 +8,9 @@ public interface IScrapingServiceStrategy {
 
     public MoviesByCountryResponse getMoviesByCountry(String category, int page) throws Exception;
 
-    public MovieDetailsResponse getMovieDetail(String title, String type) throws Exception;
+    public MovieDetailsResponse getMovieDetail(String title) throws Exception;
 
-    public MovieEpisodeResponse getMovieEpisode(String title, String type) throws Exception;
+    public MovieEpisodeResponse getMovieEpisode(String title) throws Exception;
 
     public CategoriesResponse getCategories() throws Exception;
 

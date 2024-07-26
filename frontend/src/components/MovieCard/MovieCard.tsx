@@ -1,6 +1,7 @@
 import React from 'react';
 import { Card, CardMedia, CardContent, Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import { extractTitleFromURL } from '../../utils/extractLinkUtils';
 
 interface Movie {
     title: string;
@@ -12,7 +13,7 @@ interface Movie {
 const MovieCard: React.FC<Movie> = ({ title, subTitle, link, poster, status }) => {
     const navigate = useNavigate();
     const handleMovieClick = () => {
-        navigate(`/${link}`);
+        navigate(`/${extractTitleFromURL(link)}`);
     };
 
     return (

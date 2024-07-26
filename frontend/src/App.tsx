@@ -1,5 +1,5 @@
 import './App.css'
-import { Homepage, Category, Country } from './pages'
+import { Homepage, Category, Country, FeatureMovie } from './pages'
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
@@ -31,7 +31,7 @@ function App() {
             <Route path="/" element={<Homepage />} />
             <Route path="/the-loai/:category" element={<Category />} />
             <Route path="/quoc-gia/:country" element={<Country />} />
-            <Route path="/phim-le/:movie" element={<Homepage />} />
+            <Route path="/phim-le/:movie" element={<FeatureMovie />} />
             <Route path="/phim-bo/:movie" element={<Homepage />} />
             <Route path="/thong-tin/:movie" element={<Homepage />} />
             <Route path="/tim-kiem/:keyword" element={<Homepage />} />

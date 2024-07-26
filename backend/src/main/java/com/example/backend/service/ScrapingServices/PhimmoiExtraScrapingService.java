@@ -200,7 +200,7 @@ public class PhimmoiExtraScrapingService implements IScrapingServiceStrategy {
     }
 
     @Override
-    public MovieDetailsResponse getMovieDetail(String title, String type) throws Exception {
+    public MovieDetailsResponse getMovieDetail(String title) throws Exception {
         String normalizedTitle = stringManipulator.modify(title);
         String url = "https://phimmoichillu.net/info/" + normalizedTitle;
 
@@ -217,7 +217,7 @@ public class PhimmoiExtraScrapingService implements IScrapingServiceStrategy {
     }
 
     @Override
-    public MovieEpisodeResponse getMovieEpisode(String title, String type) throws Exception {
+    public MovieEpisodeResponse getMovieEpisode(String title) throws Exception {
         String normalizedTitle = stringManipulator.modify(title);
         String url = "https://phimmoichillu.net/xem/" + normalizedTitle;
 

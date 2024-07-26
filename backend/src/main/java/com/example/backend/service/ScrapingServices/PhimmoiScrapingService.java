@@ -226,10 +226,9 @@ public class PhimmoiScrapingService implements IScrapingServiceStrategy {
     }
 
     @Override
-    public MovieDetailsResponse getMovieDetail(String title, String type) throws Exception {
+    public MovieDetailsResponse getMovieDetail(String title) throws Exception {
         String normalizedTitle = stringManipulator.modify(title);
-        String normalizedType = stringManipulator.modify(type);
-        String url = "https://phimmoiiii.net/" + normalizedType + "/" + normalizedTitle;
+        String url = "https://phimmoiiii.net/" + normalizedTitle;
 
         try {
             Document document = Jsoup.connect(url).get();
@@ -244,10 +243,9 @@ public class PhimmoiScrapingService implements IScrapingServiceStrategy {
     }
 
     @Override
-    public MovieEpisodeResponse getMovieEpisode(String title, String type) throws Exception {
+    public MovieEpisodeResponse getMovieEpisode(String title) throws Exception {
         String normalizedTitle = stringManipulator.modify(title);
-        String normalizedType = stringManipulator.modify(type);
-        String url = "https://phimmoiiii.net/" + normalizedType + "/" + normalizedTitle;
+        String url = "https://phimmoiiii.net/" + normalizedTitle;
 
         System.setProperty("webdriver.chrome.driver", "D:\\chromedriver-win64\\chromedriver.exe");
 
