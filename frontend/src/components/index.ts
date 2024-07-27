@@ -6,3 +6,4 @@ export { default as Categories } from './Categories/Categories';
 export { default as Countries } from './Countries/Countries';
 export { default as Searchbar } from './Searchbar/Searchbar';
 export { default as MovieInfo } from './MovieInfo/MovieInfo';
+export { default as MovieStreaming } from './MovieStreaming/MovieStreaming';

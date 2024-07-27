@@ -2,7 +2,7 @@ import { Container, Grid, useMediaQuery, useTheme } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { useParams } from 'react-router-dom';
 import { useMovieDetails, useMovieEpisode } from '../../hooks/movieHook';
-import { MovieInfo } from '../../components';
+import { MovieInfo, MovieStreaming } from '../../components';
 
 const PREFIX = 'MovieIntroduction';
 const classes = {
@@ -47,6 +47,7 @@ const FeatureMovie = () => {
         ) : (
           <Grid container>
             <Grid item className={classes.content}>
+              <MovieStreaming {...movieEpisode}/>
               <MovieInfo {...movieDetails}/>
             </Grid>
           </Grid>

@@ -34,12 +34,16 @@ interface MovieDetailResponse {
   };
 }
 
+interface MovieEpisode {
+  video: string;
+}
+
 interface MovieEpisodeResponse {
   status: string;
   message: string;
   status_code: number;
   data: {
-    movieEpisode?: string[];
+    movieEpisode?: MovieEpisode;
   };
 }
 

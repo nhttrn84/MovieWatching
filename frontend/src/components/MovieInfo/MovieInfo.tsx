@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Typography, Grid, Paper, Box, Rating, Button } from '@mui/material';
+import { Typography, Grid, Paper, Box, Rating, Button, Avatar } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
 import { normalizeString } from '../../utils/stringUtils';
@@ -16,6 +16,9 @@ const classes = {
   paper: `${PREFIX}-paper`,
   description: `${PREFIX}-description`,
   showMoreButton: `${PREFIX}-showMoreButton`,
+  menuButton: `${PREFIX}-menuButton`,
+  personContainer: `${PREFIX}-personContainer`,
+  personDetails: `${PREFIX}-personDetails`,
 };
 
 const Root = styled('div')(({ theme }) => ({
@@ -30,45 +33,57 @@ const Root = styled('div')(({ theme }) => ({
   [`& .${classes.details}`]: {
     padding: theme.spacing(2),
   },
+  [`& .${classes.menuButton}`]: {
+    marginRight: theme.spacing(1),
+  },
+  [`& .${classes.personContainer}`]: {
+    display: 'flex',
+    alignItems: 'center',
+    marginBottom: theme.spacing(1),
+  },
+  [`& .${classes.personDetails}`]: {
+    marginLeft: theme.spacing(2),
+  },
 }));
 
 interface Episode {
-    title: string;
-    link: string;
+  title: string;
+  link: string;
 }
 
 interface Person {
-    name: string;
-    image: string;
-    character: string;
+  name: string;
+  image: string;
+  character: string;
 }
 
 interface MovieDetail {
-    title: string;
-    subTitle: string;
-    poster: string;
-    date: string;
-    status: string;
-    rating: string;
-    categories: string[];
-    episodes: Episode[];
-    info: string;
-    creators: Person[];
-    actors: Person[];
+  title: string;
+  subTitle: string;
+  poster: string;
+  date: string;
+  status: string;
+  rating: string;
+  categories: string[];
+  episodes: Episode[];
+  info: string;
+  creators: Person[];
+  actors: Person[];
 }
 
 const MovieInfo: React.FC<MovieDetail> = ({
-    title, 
-    subTitle, 
-    poster, 
-    date, 
-    status, 
-    rating, 
-    categories,
-    episodes, 
-    info,
-    creators, 
-    actors }) => {
+  title,
+  subTitle,
+  poster,
+  date,
+  status,
+  rating,
+  categories,
+  episodes,
+  info,
+  creators,
+  actors,
+}) => {
   const navigate = useNavigate();
   const [showMore, setShowMore] = useState(false);
   const [menuSelect, setMenuSelect] = useState(false);
@@ -78,7 +93,7 @@ const MovieInfo: React.FC<MovieDetail> = ({
   };
 
   const handleEpisode = (url: string) => {
-    navigate(`${extractTitleFromURL(url)}`);
+    navigate(`/${extractTitleFromURL(url)}`);
   };
 
   const handleShowMore = () => {
@@ -125,9 +140,9 @@ const MovieInfo: React.FC<MovieDetail> = ({
               >
                 {rating}
               </Typography>
-              <Rating value={parseFloat(rating)/2} readOnly />
+              <Rating value={parseFloat(rating) / 2} readOnly />
             </Box>
-            
+
             <Typography variant="body1" className={classes.info}>
               <div>
                 {categories?.map((category: string, index: number) => (
@@ -144,59 +159,65 @@ const MovieInfo: React.FC<MovieDetail> = ({
             </Typography>
           </Grid>
         </Grid>
-        <Button onClick={handleSelectInfo} >Thông tin</Button>
-        <Button onClick={handleSelectActors} >Diễn viên</Button>
-        <Grid>
-          { menuSelect ? (
-            <div>
-              <Typography>
-                Đạo diễn
-              </Typography>
-              <div>
+        <Box display="flex" justifyContent="center" mt={2}>
+          <Button
+            onClick={handleSelectInfo}
+            variant={menuSelect ? 'text' : 'contained'}
+            className={classes.menuButton}
+          >
+            Thông tin
+          </Button>
+          <Button
+            onClick={handleSelectActors}
+            variant={menuSelect ? 'contained' : 'text'}
+            className={classes.menuButton}
+          >
+            Diễn viên
+          </Button>
+        </Box>
+        <Grid container spacing={2} mt={2}>
+          {menuSelect ? (
+            <Grid item xs={12}>
+              <Typography variant="h6">Đạo diễn</Typography>
               {creators?.map((person: Person, index: number) => (
-                  <span
-                    key={index}
-                    style={{ cursor: 'pointer' }}
-                  >
-                    &nbsp;{person?.name}
-                    &nbsp;{person?.character}
-                    {index < categories?.length - 1 ? ' | ' : ''}
-                  </span>
-                ))}
-              </div>
-              <Typography>
-                DIễn viên
+                <Box key={index} className={classes.personContainer}>
+                  <Avatar src={person?.image} alt={person?.name} />
+                  <Box className={classes.personDetails}>
+                    <Typography variant="body1">{person?.name}</Typography>
+                    <Typography variant="body2">{person?.character}</Typography>
+                  </Box>
+                </Box>
+              ))}
+              <Typography variant="h6" mt={2}>
+                Diễn viên
               </Typography>
-              <div>
               {actors?.map((person: Person, index: number) => (
-                  <span
-                    key={index}
-                    style={{ cursor: 'pointer' }}
-                  >
-                    <Grid container>
-                      <Grid item>
-                      <img
-                        src={person?.image}
-                        alt="Actor"
-                      />
-                        {person?.name}
-                        {person?.character}
-                      </Grid>
-                    </Grid>
-                  </span>
-                ))}
-              </div>
-            </div>
+                <Box key={index} className={classes.personContainer}>
+                  <Avatar src={person?.image} alt={person?.name} />
+                  <Box className={classes.personDetails}>
+                    <Typography variant="body1">{person?.name}</Typography>
+                    <Typography variant="body2">{person?.character}</Typography>
+                  </Box>
+                </Box>
+              ))}
+            </Grid>
           ) : (
-            <div>
+            <Grid item xs={12}>
               <Typography variant="body2" className={classes.description}>
                 {showMore ? info : shortDescription}
               </Typography>
               <Button onClick={handleShowMore} className={classes.showMoreButton}>
                 {showMore ? 'Thu gọn' : 'Xem thêm'}
               </Button>
-            </div>
+            </Grid>
           )}
+        </Grid>
+        <Grid container spacing={2} mt={2}>
+          {episodes?.map((episode: Episode, index: number) => (
+            <Button key={index} onClick={() => handleEpisode(episode.link)}>
+              {index}
+            </Button>
+          ))}
         </Grid>
       </Paper>
     </Root>

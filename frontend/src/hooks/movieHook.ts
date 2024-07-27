@@ -26,7 +26,11 @@ interface MovieDetail {
   actors: Person[];
 }
 
-export function useMovieDetails(title: string) : {
+interface MovieEpisode {
+  video: string;
+}
+
+export function useMovieDetails(title: string | undefined) : {
   isPending: boolean;
   error: Error | null;
   movieDetails: MovieDetail | undefined
@@ -43,7 +47,11 @@ export function useMovieDetails(title: string) : {
   return { isPending, error, movieDetails: movieDetails?.data?.movieDetails };
 }
 
-export function useMovieEpisode(title: string) {
+export function useMovieEpisode(title: string | undefined) : {
+  isPending: boolean;
+  error: Error | null;
+  movieEpisode: MovieEpisode | undefined
+} {
   const {
     isPending,
     error,
