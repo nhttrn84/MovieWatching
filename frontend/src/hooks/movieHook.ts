@@ -60,6 +60,7 @@ export function useMovieEpisode(title: string | undefined) : {
     queryKey: ["movie-episode", title],
     queryFn: () => movieAPI.getMovieEpisode(title),
   });
+  console.log(movieEpisode);
 
   return { isPending, error, movieEpisode: movieEpisode?.data?.movieEpisode };
 }

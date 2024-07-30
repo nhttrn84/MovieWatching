@@ -1,7 +1,8 @@
 import React from 'react';
 import { Container, Box } from '@mui/material';
 
-const MovieStreaming: React.FC = (video: string) => {
+const MovieStreaming: React.FC<string | undefined> = (video) => {
+  console.log(video);
   return (
     <Container>
       <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mt: 4 }}>

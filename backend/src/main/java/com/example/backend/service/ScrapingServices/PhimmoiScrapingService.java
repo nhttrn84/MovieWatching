@@ -23,12 +23,15 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.time.Duration;
 
 @Service
 public class PhimmoiScrapingService implements IScrapingServiceStrategy {
@@ -256,11 +259,13 @@ public class PhimmoiScrapingService implements IScrapingServiceStrategy {
 
         // Initialize WebDriver with ChromeOptions
         WebDriver driver = new ChromeDriver(options);
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(30));
 
         try {
             // Open the page
             driver.get(url);
-            WebElement iframe = driver.findElement(By.xpath("//div[@class='pframe']/iframe[1]"));
+            WebElement iframe = wait
+                    .until(ExpectedConditions.presenceOfElementLocated(By.xpath("//div[@class='pframe']/iframe[1]")));
             String src = iframe.getAttribute("src");
             String extractedLink = src.substring(src.indexOf("=") + 1);
 

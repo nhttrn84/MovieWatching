@@ -1,17 +1,26 @@
 package com.example.backend.service.ScrapingServices;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import lombok.AllArgsConstructor;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.json.JSONObject;
+import java.util.zip.GZIPInputStream;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.backend.dto.EpisodeDTO;
 import com.example.backend.dto.MovieDetailsDTO;
+import com.example.backend.dto.MovieEpisodesDTO;
 import com.example.backend.dto.MoviesByCatDTO;
 import com.example.backend.dto.PersonDTO;
 import com.example.backend.factory.ScrapingServiceFactory;
@@ -23,6 +32,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.zip.GZIPInputStream;
 
 @Service
 public class PhimmoiExtraScrapingService implements IScrapingServiceStrategy {
@@ -219,18 +229,86 @@ public class PhimmoiExtraScrapingService implements IScrapingServiceStrategy {
     @Override
     public MovieEpisodeResponse getMovieEpisode(String title) throws Exception {
         String normalizedTitle = stringManipulator.modify(title);
-        String url = "https://phimmoichillu.net/xem/" + normalizedTitle;
-
+        String url = "https://phimmoiiii.net/" + normalizedTitle;
         try {
+            // Step 1: Use Jsoup to load the initial page
             Document document = Jsoup.connect(url).get();
-            log.info("document: {}", document);
 
-            return MovieEpisodeResponse.builder()
-                    .movieEpisodes(null)
+            // Step 2: Extract necessary information from the initial page
+            String videoPageUrl = extractVideoPageUrl(document, url);
+
+            // Output the extracted video page URL
+            System.out.println("Video Page URL: " + videoPageUrl);
+
+            MovieEpisodesDTO movieLink = MovieEpisodesDTO.builder()
+                    .video(videoPageUrl)
                     .build();
+            return MovieEpisodeResponse.builder()
+                    .movieEpisodes(movieLink)
+                    .build();
+
         } catch (IOException e) {
-            throw new Exception("Error fetching movies by category");
+            throw new Exception("Error getting movie episode");
         }
+    }
+
+    private static String extractVideoPageUrl(Document document, String link) throws Exception {
+        // Extract the necessary data attributes from the page
+        Element playerOption = document.selectFirst("#player-option-1");
+        if (playerOption == null) {
+            throw new Exception("Player option not found");
+        }
+
+        String dataPost = playerOption.attr("data-post");
+        String dataNume = playerOption.attr("data-nume");
+
+        // Step 3: Send an HTTP request to the endpoint that returns the video URL
+        String ajaxUrl = "https://phimmoiiii.net/wp-admin/admin-ajax.php";
+        URL url = new URL(ajaxUrl);
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestMethod("POST");
+        connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
+        connection.setRequestProperty("Accept", "*/*");
+        connection.setRequestProperty("User-Agent",
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36");
+        connection.setRequestProperty("X-Requested-With", "XMLHttpRequest");
+        connection.setRequestProperty("Referer", link);
+        connection.setRequestProperty("Accept-Encoding", "gzip, deflate, br, zstd");
+        connection.setRequestProperty("Accept-Language", "en-US,en;q=0.9");
+        connection.setDoOutput(true);
+
+        String postData = "action=doo_player_ajax&post=" + dataPost + "&nume=" + dataNume + "&type=movie";
+        System.out.println(postData);
+        try (OutputStream os = connection.getOutputStream()) {
+            byte[] input = postData.getBytes("utf-8");
+            os.write(input, 0, input.length);
+        }
+
+        int responseCode = connection.getResponseCode();
+        System.out.println(responseCode);
+
+        if (responseCode == HttpURLConnection.HTTP_OK) {
+            BufferedReader in = new BufferedReader(new InputStreamReader(
+                    new GZIPInputStream(connection.getInputStream()), "utf-8"));
+            String inputLine;
+            StringBuilder content = new StringBuilder();
+            while ((inputLine = in.readLine()) != null) {
+                content.append(inputLine);
+            }
+            in.close();
+            // Step 4: Parse the response to get the actual video URL
+            String jsonResponse = content.toString();
+            String videoUrl = parseVideoUrlFromResponse(jsonResponse);
+            return videoUrl;
+        } else {
+            throw new Exception("Failed to connect: HTTP error code : " + responseCode);
+        }
+    }
+
+    private static String parseVideoUrlFromResponse(String jsonResponse) {
+        // Implement JSON parsing logic to extract the video URL from the response
+        JSONObject jsonObject = new JSONObject(jsonResponse);
+        return jsonObject.getString("embed_url");
     }
 
     @Override
