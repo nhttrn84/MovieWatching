@@ -7,3 +7,4 @@ export { default as Countries } from './Countries/Countries';
 export { default as Searchbar } from './Searchbar/Searchbar';
 export { default as MovieInfo } from './MovieInfo/MovieInfo';
 export { default as MovieStreaming } from './MovieStreaming/MovieStreaming';
+export { default as EpisodeList } from './EpisodeList/EpisodeList';

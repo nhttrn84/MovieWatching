@@ -2,7 +2,7 @@ import { Container, Grid, useMediaQuery, useTheme } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { useParams } from 'react-router-dom';
 import { useMovieDetails } from '../../hooks/movieHook';
-import { MovieInfo } from '../../components';
+import { MovieInfo, EpisodeList } from '../../components';
 
 const PREFIX = 'MovieIntroduction';
 const classes = {
@@ -46,7 +46,13 @@ const MovieDetails = () => {
         ) : (
           <Grid container>
             <Grid item className={classes.content}>
-              {movieDetails && <MovieInfo {...movieDetails}/>}
+              {movieDetails && (
+                <>
+                <MovieInfo {...movieDetails}/>
+                <EpisodeList episodeList={movieDetails?.episodes}/>
+                </>
+              )
+              }
             </Grid>
           </Grid>
         )}

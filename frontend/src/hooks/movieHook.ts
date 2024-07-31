@@ -50,7 +50,7 @@ export function useMovieDetails(title: string | undefined) : {
 export function useMovieEpisode(title: string | undefined) : {
   isPending: boolean;
   error: Error | null;
-  MovieEpisodes: MovieEpisodes | undefined
+  movieEpisode: MovieEpisodes | undefined
 } {
   const {
     isPending,
@@ -61,5 +61,5 @@ export function useMovieEpisode(title: string | undefined) : {
     queryFn: () => movieAPI.getMovieEpisode(title),
   });
 
-  return { isPending, error, MovieEpisodes: movieEpisodes?.data?.movieEpisodes };
+  return { isPending, error, movieEpisode: movieEpisodes?.data?.movieEpisodes };
 }

@@ -32,7 +32,7 @@ const FeatureMovie = () => {
   const { movie } = useParams<{ movie: string }>();
 
   const { movieDetails } = useMovieDetails(`phim-le/${movie}`);
-  const { MovieEpisodes } = useMovieEpisode(`phim-le/${movie}`);
+  const { movieEpisode } = useMovieEpisode(`phim-le/${movie}`);
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -47,7 +47,7 @@ const FeatureMovie = () => {
         ) : (
           <Grid container>
             <Grid item className={classes.content}>
-              {MovieEpisodes && <MovieStreaming {...MovieEpisodes}/>}
+              {movieEpisode && <MovieStreaming {...movieEpisode}/>}
               {movieDetails && <MovieInfo {...movieDetails}/>}
             </Grid>
           </Grid>
