@@ -111,11 +111,12 @@ public class ScrapingController {
     }
 
     // Get movie details
-    @GetMapping("/detail/{title}")
+    @GetMapping("/detail/{type}/{title}")
     public ResponseEntity<?> getMovieDetails(
+            @PathVariable String type,
             @PathVariable String title) {
         try {
-            MovieDetailsResponse movieDetails = phimmoiScrapingService.getMovieDetail(title);
+            MovieDetailsResponse movieDetails = phimmoiScrapingService.getMovieDetail(type, title);
             return ResponseEntity.ok(BaseResponse.<MovieDetailsResponse>builder()
                     .status("Successful")
                     .message(MessageKeys.GET_MOVIEDETAILS_SUCCESSFULLY)
@@ -132,11 +133,12 @@ public class ScrapingController {
     }
 
     // Get movie episode
-    @GetMapping("/episode/{title}")
+    @GetMapping("/episode/{type}/{title}")
     public ResponseEntity<?> getMovieEpisode(
+            @PathVariable String type,
             @PathVariable String title) {
         try {
-            MovieEpisodeResponse movieEpisode = phimmoiScrapingService.getMovieEpisode(title);
+            MovieEpisodeResponse movieEpisode = phimmoiScrapingService.getMovieEpisode(type, title);
             return ResponseEntity.ok(BaseResponse.<MovieEpisodeResponse>builder()
                     .status("Successful")
                     .message(MessageKeys.GET_MOVIEEPISODE_SUCCESSFULLY)

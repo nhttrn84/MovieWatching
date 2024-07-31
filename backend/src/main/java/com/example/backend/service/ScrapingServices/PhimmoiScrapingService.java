@@ -3,6 +3,7 @@ package com.example.backend.service.ScrapingServices;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.json.JSONObject;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -26,11 +27,17 @@ import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.zip.GZIPInputStream;
 import java.time.Duration;
 
 @Service
@@ -229,9 +236,10 @@ public class PhimmoiScrapingService implements IScrapingServiceStrategy {
     }
 
     @Override
-    public MovieDetailsResponse getMovieDetail(String title) throws Exception {
+    public MovieDetailsResponse getMovieDetail(String type, String title) throws Exception {
         String normalizedTitle = stringManipulator.modify(title);
-        String url = "https://phimmoiiii.net/" + normalizedTitle;
+        String normalizedType = stringManipulator.modify(type);
+        String url = "https://phimmoiiii.net/" + normalizedType + "/" + normalizedTitle;
 
         try {
             Document document = Jsoup.connect(url).get();
@@ -246,43 +254,86 @@ public class PhimmoiScrapingService implements IScrapingServiceStrategy {
     }
 
     @Override
-    public MovieEpisodeResponse getMovieEpisode(String title) throws Exception {
+    public MovieEpisodeResponse getMovieEpisode(String type, String title) throws Exception {
         String normalizedTitle = stringManipulator.modify(title);
-        String url = "https://phimmoiiii.net/" + normalizedTitle;
-
-        System.setProperty("webdriver.chrome.driver", "D:\\chromedriver-win64\\chromedriver.exe");
-
-        ChromeOptions options = new ChromeOptions();
-        options.addArguments("--headless");
-        options.addArguments("--disable-gpu");
-        options.addArguments("--no-sandbox");
-
-        // Initialize WebDriver with ChromeOptions
-        WebDriver driver = new ChromeDriver(options);
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(30));
+        String normalizedType = stringManipulator.modify(type);
+        String url = "https://phimmoiiii.net/" + normalizedType + "/" + normalizedTitle;
 
         try {
-            // Open the page
-            driver.get(url);
-            WebElement iframe = wait
-                    .until(ExpectedConditions.presenceOfElementLocated(By.xpath("//div[@class='pframe']/iframe[1]")));
-            String src = iframe.getAttribute("src");
-            String extractedLink = src.substring(src.indexOf("=") + 1);
+            // Step 1: Use Jsoup to load the initial page
+            Document document = Jsoup.connect(url).get();
+
+            // Step 2: Extract necessary information from the initial page
+            String videoPageUrl = extractVideoPageUrl(document, url);
 
             MovieEpisodesDTO movieLink = MovieEpisodesDTO.builder()
-                    .video(extractedLink)
+                    .video(videoPageUrl)
                     .build();
-
             return MovieEpisodeResponse.builder()
                     .movieEpisodes(movieLink)
                     .build();
 
-        } catch (Exception e) {
-            throw new Exception("Error fetching movies by episode");
-        } finally {
-            // Close the browser
-            driver.quit();
+        } catch (IOException e) {
+            throw new Exception("Error getting movie episode");
         }
+    }
+
+    private static String extractVideoPageUrl(Document document, String link) throws Exception {
+        // Extract the necessary data attributes from the page
+        Element playerOption = document.selectFirst("#player-option-1");
+        if (playerOption == null) {
+            throw new Exception("Player option not found");
+        }
+
+        String dataPost = playerOption.attr("data-post");
+        String dataNume = playerOption.attr("data-nume");
+
+        // Step 3: Send an HTTP request to the endpoint that returns the video URL
+        String ajaxUrl = "https://phimmoiiii.net/wp-admin/admin-ajax.php";
+        URL url = new URL(ajaxUrl);
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestMethod("POST");
+        connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
+        connection.setRequestProperty("Accept", "*/*");
+        connection.setRequestProperty("User-Agent",
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36");
+        connection.setRequestProperty("X-Requested-With", "XMLHttpRequest");
+        connection.setRequestProperty("Referer", link);
+        connection.setRequestProperty("Accept-Encoding", "gzip, deflate, br, zstd");
+        connection.setRequestProperty("Accept-Language", "en-US,en;q=0.9");
+        connection.setDoOutput(true);
+
+        String postData = "action=doo_player_ajax&post=" + dataPost + "&nume=" + dataNume + "&type=movie";
+        System.out.println(postData);
+        try (OutputStream os = connection.getOutputStream()) {
+            byte[] input = postData.getBytes("utf-8");
+            os.write(input, 0, input.length);
+        }
+
+        int responseCode = connection.getResponseCode();
+
+        if (responseCode == HttpURLConnection.HTTP_OK) {
+            BufferedReader in = new BufferedReader(new InputStreamReader(
+                    new GZIPInputStream(connection.getInputStream()), "utf-8"));
+            String inputLine;
+            StringBuilder content = new StringBuilder();
+            while ((inputLine = in.readLine()) != null) {
+                content.append(inputLine);
+            }
+            in.close();
+            // Step 4: Parse the response to get the actual video URL
+            String jsonResponse = content.toString();
+            String videoUrl = parseVideoUrlFromResponse(jsonResponse);
+            return videoUrl;
+        } else {
+            throw new Exception("Failed to connect: HTTP error code : " + responseCode);
+        }
+    }
+
+    private static String parseVideoUrlFromResponse(String jsonResponse) {
+        // Implement JSON parsing logic to extract the video URL from the response
+        JSONObject jsonObject = new JSONObject(jsonResponse);
+        return jsonObject.getString("embed_url");
     }
 
     @Override

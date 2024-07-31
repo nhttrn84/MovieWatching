@@ -26,7 +26,7 @@ interface MovieDetail {
   actors: Person[];
 }
 
-interface MovieEpisode {
+interface MovieEpisodes {
   video: string;
 }
 
@@ -50,17 +50,16 @@ export function useMovieDetails(title: string | undefined) : {
 export function useMovieEpisode(title: string | undefined) : {
   isPending: boolean;
   error: Error | null;
-  movieEpisode: MovieEpisode | undefined
+  MovieEpisodes: MovieEpisodes | undefined
 } {
   const {
     isPending,
     error,
-    data: movieEpisode,
+    data: movieEpisodes,
   } = useQuery({
     queryKey: ["movie-episode", title],
     queryFn: () => movieAPI.getMovieEpisode(title),
   });
-  console.log(movieEpisode);
 
-  return { isPending, error, movieEpisode: movieEpisode?.data?.movieEpisode };
+  return { isPending, error, MovieEpisodes: movieEpisodes?.data?.movieEpisodes };
 }

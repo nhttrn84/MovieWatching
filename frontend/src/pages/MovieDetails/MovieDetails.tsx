@@ -1,7 +1,7 @@
 import { Container, Grid, useMediaQuery, useTheme } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { useParams } from 'react-router-dom';
-import { useMovieDetails, useMovieEpisode } from '../../hooks/movieHook';
+import { useMovieDetails } from '../../hooks/movieHook';
 import { MovieInfo } from '../../components';
 
 const PREFIX = 'MovieIntroduction';
@@ -31,8 +31,7 @@ const Root = styled('div')(({ theme }) => ({
 const MovieDetails = () => {
   const { movie } = useParams<{ movie: string }>();
 
-  const { movieDetails } = useMovieDetails(movie);
-  const { movieEpisode } = useMovieEpisode(movie);
+  const { movieDetails } = useMovieDetails(`phim-bo/${movie}`);
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -47,7 +46,7 @@ const MovieDetails = () => {
         ) : (
           <Grid container>
             <Grid item className={classes.content}>
-              <MovieInfo {...movieDetails}/>
+              {movieDetails && <MovieInfo {...movieDetails}/>}
             </Grid>
           </Grid>
         )}

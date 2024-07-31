@@ -34,7 +34,7 @@ interface MovieDetailResponse {
   };
 }
 
-interface MovieEpisode {
+interface MovieEpisodes {
   video: string;
 }
 
@@ -43,7 +43,7 @@ interface MovieEpisodeResponse {
   message: string;
   status_code: number;
   data: {
-    movieEpisode?: MovieEpisode;
+    movieEpisodes?: MovieEpisodes;
   };
 }
 
@@ -56,6 +56,7 @@ class MovieAPI {
     const response = await customAxios.get(
       `/detail/${title}`
     );
+    
     return response.data;
   }
 
@@ -67,6 +68,7 @@ class MovieAPI {
     const response = await customAxios.get(
       `/episode/${title}`
     );
+    console.log(response);
     return response.data;
   }
 }

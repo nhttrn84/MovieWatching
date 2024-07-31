@@ -31,8 +31,8 @@ const Root = styled('div')(({ theme }) => ({
 const FeatureMovie = () => {
   const { movie } = useParams<{ movie: string }>();
 
-  const { movieDetails } = useMovieDetails(movie);
-  const { movieEpisode } = useMovieEpisode(movie);
+  const { movieDetails } = useMovieDetails(`phim-le/${movie}`);
+  const { MovieEpisodes } = useMovieEpisode(`phim-le/${movie}`);
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -47,8 +47,8 @@ const FeatureMovie = () => {
         ) : (
           <Grid container>
             <Grid item className={classes.content}>
-              <MovieStreaming {...movieEpisode}/>
-              <MovieInfo {...movieDetails}/>
+              {MovieEpisodes && <MovieStreaming {...MovieEpisodes}/>}
+              {movieDetails && <MovieInfo {...movieDetails}/>}
             </Grid>
           </Grid>
         )}

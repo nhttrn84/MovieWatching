@@ -210,7 +210,7 @@ public class PhimmoiExtraScrapingService implements IScrapingServiceStrategy {
     }
 
     @Override
-    public MovieDetailsResponse getMovieDetail(String title) throws Exception {
+    public MovieDetailsResponse getMovieDetail(String type, String title) throws Exception {
         String normalizedTitle = stringManipulator.modify(title);
         String url = "https://phimmoichillu.net/info/" + normalizedTitle;
 
@@ -227,7 +227,7 @@ public class PhimmoiExtraScrapingService implements IScrapingServiceStrategy {
     }
 
     @Override
-    public MovieEpisodeResponse getMovieEpisode(String title) throws Exception {
+    public MovieEpisodeResponse getMovieEpisode(String type, String title) throws Exception {
         String normalizedTitle = stringManipulator.modify(title);
         String url = "https://phimmoiiii.net/" + normalizedTitle;
         try {
@@ -236,9 +236,6 @@ public class PhimmoiExtraScrapingService implements IScrapingServiceStrategy {
 
             // Step 2: Extract necessary information from the initial page
             String videoPageUrl = extractVideoPageUrl(document, url);
-
-            // Output the extracted video page URL
-            System.out.println("Video Page URL: " + videoPageUrl);
 
             MovieEpisodesDTO movieLink = MovieEpisodesDTO.builder()
                     .video(videoPageUrl)
@@ -285,7 +282,6 @@ public class PhimmoiExtraScrapingService implements IScrapingServiceStrategy {
         }
 
         int responseCode = connection.getResponseCode();
-        System.out.println(responseCode);
 
         if (responseCode == HttpURLConnection.HTTP_OK) {
             BufferedReader in = new BufferedReader(new InputStreamReader(
